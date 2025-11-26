@@ -1,180 +1,177 @@
+/*
+ * GLUT Shapes Demo
+ *
+ * Written by Nigel Stewart November 2003
+ *
+ * This program is test harness for the sphere, cone
+ * and torus shapes in GLUT.
+ *
+ * Spinning wireframe and smooth shaded shapes are
+ * displayed until the ESC or q key is pressed.  The
+ * number of geometry stacks and slices can be adjusted
+ * using the + and - keys.
+ */
+
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
 #include <GL/glut.h>
-#include <cmath>
-#include <vector>
-#include <cstdlib>
-#include <ctime>
-#include <string>
-using namespace std;
+#endif
 
-// ===== Structures =====
-struct Vec { float x, y; };
-struct Bullet { Vec pos, vel; int life; };
-struct Asteroid { Vec pos, vel; float r; };
-struct Ship { Vec pos, vel; float angle; int lives; };
+#include <stdlib.h>
 
-// ===== Globals =====
-Ship ship;
-vector<Bullet> bullets;
-vector<Asteroid> asteroids;
-int score = 0;
-bool keyLeft=false, keyRight=false, keyUp=false;
+static int slices = 16;
+static int stacks = 16;
 
-// ===== Utility =====
-float frand(float a,float b){ return a+(b-a)*(rand()/(float)RAND_MAX); }
-float length(Vec a,Vec b){ return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y)); }
+/* GLUT callback Handlers */
 
-// ===== Game setup =====
-void resetShip(){
-    ship.pos = {0,0}; ship.vel = {0,0};
-    ship.angle = 90; ship.lives = 3;
-}
-void spawnAsteroid(){
-    Asteroid a;
-    a.r = 0.1f;
-    a.pos = {frand(-1,1), frand(-1,1)};
-    a.vel = {frand(-0.01,0.01), frand(-0.01,0.01)};
-    asteroids.push_back(a);
+static void resize(int width, int height)
+{
+    const float ar = (float) width / (float) height;
+
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(-ar, ar, -1.0, 1.0, 2.0, 100.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity() ;
 }
 
-// ===== Drawing =====
-void drawShip(){
+static void display(void)
+{
+    const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+    const double a = t*90.0;
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3d(1,0,0);
+
     glPushMatrix();
-    glTranslatef(ship.pos.x, ship.pos.y, 0);
-    glRotatef(ship.angle,0,0,1);
-    glBegin(GL_TRIANGLES);
-      glColor3f(0,1,0);
-      glVertex2f(0,0.05); glVertex2f(-0.03,-0.03); glVertex2f(0.03,-0.03);
-    glEnd();
+        glTranslated(-2.4,1.2,-6);
+        glRotated(60,1,0,0);
+        glRotated(a,0,0,1);
+        glutSolidSphere(1,slices,stacks);
     glPopMatrix();
-}
-void drawBullet(Bullet &b){
-    glColor3f(1,1,0);
-    glBegin(GL_QUADS);
-      glVertex2f(b.pos.x-0.01,b.pos.y-0.01);
-      glVertex2f(b.pos.x+0.01,b.pos.y-0.01);
-      glVertex2f(b.pos.x+0.01,b.pos.y+0.01);
-      glVertex2f(b.pos.x-0.01,b.pos.y+0.01);
-    glEnd();
-}
-void drawAsteroid(Asteroid &a){
-    glColor3f(1,0,0);
-    glBegin(GL_POLYGON);
-    for(int i=0;i<20;i++){
-        float th=2*M_PI*i/20;
-        glVertex2f(a.pos.x+a.r*cos(th), a.pos.y+a.r*sin(th));
-    }
-    glEnd();
-}
-void drawText(float x,float y,string s){
-    glRasterPos2f(x,y);
-    for(char c:s) glutBitmapCharacter(GLUT_BITMAP_8_BY_13,c);
-}
 
-// ===== Game Update =====
-void update(){
-    // ship control
-    if(keyLeft) ship.angle+=3;
-    if(keyRight) ship.angle-=3;
-    if(keyUp){
-        ship.vel.x += 0.001*cos(ship.angle*M_PI/180);
-        ship.vel.y += 0.001*sin(ship.angle*M_PI/180);
-    }
-    ship.pos.x+=ship.vel.x; ship.pos.y+=ship.vel.y;
-    if(ship.pos.x>1) ship.pos.x=-1; if(ship.pos.x<-1) ship.pos.x=1;
-    if(ship.pos.y>1) ship.pos.y=-1; if(ship.pos.y<-1) ship.pos.y=1;
+    glPushMatrix();
+        glTranslated(0,1.2,-6);
+        glRotated(60,1,0,0);
+        glRotated(a,0,0,1);
+        glutSolidCone(1,1,slices,stacks);
+    glPopMatrix();
 
-    // bullets
-    for(int i=0;i<bullets.size();i++){
-        bullets[i].pos.x+=bullets[i].vel.x;
-        bullets[i].pos.y+=bullets[i].vel.y;
-        bullets[i].life--;
-        if(bullets[i].life<=0){ bullets.erase(bullets.begin()+i); i--; }
-    }
+    glPushMatrix();
+        glTranslated(2.4,1.2,-6);
+        glRotated(60,1,0,0);
+        glRotated(a,0,0,1);
+        glutSolidTorus(0.2,0.8,slices,stacks);
+    glPopMatrix();
 
-    // asteroids
-    for(auto &a:asteroids){
-        a.pos.x+=a.vel.x; a.pos.y+=a.vel.y;
-        if(a.pos.x>1) a.pos.x=-1; if(a.pos.x<-1) a.pos.x=1;
-        if(a.pos.y>1) a.pos.y=-1; if(a.pos.y<-1) a.pos.y=1;
-    }
+    glPushMatrix();
+        glTranslated(-2.4,-1.2,-6);
+        glRotated(60,1,0,0);
+        glRotated(a,0,0,1);
+        glutWireSphere(1,slices,stacks);
+    glPopMatrix();
 
-    // bullet vs asteroid
-    for(int i=0;i<bullets.size();i++){
-        for(int j=0;j<asteroids.size();j++){
-            if(length(bullets[i].pos,asteroids[j].pos)<asteroids[j].r){
-                bullets.erase(bullets.begin()+i); i--;
-                asteroids.erase(asteroids.begin()+j);
-                score+=10; spawnAsteroid();
-                break;
-            }
-        }
-    }
+    glPushMatrix();
+        glTranslated(0,-1.2,-6);
+        glRotated(60,1,0,0);
+        glRotated(a,0,0,1);
+        glutWireCone(1,1,slices,stacks);
+    glPopMatrix();
 
-    // ship vs asteroid
-    for(int j=0;j<asteroids.size();j++){
-        if(length(ship.pos,asteroids[j].pos)<asteroids[j].r){
-            ship.lives--;
-            resetShip();
-            if(ship.lives<=0){ score=0; asteroids.clear(); resetShip(); spawnAsteroid(); }
-        }
-    }
-}
+    glPushMatrix();
+        glTranslated(2.4,-1.2,-6);
+        glRotated(60,1,0,0);
+        glRotated(a,0,0,1);
+        glutWireTorus(0.2,0.8,slices,stacks);
+    glPopMatrix();
 
-// ===== Rendering =====
-void display(){
-    glClear(GL_COLOR_BUFFER_BIT);
-    drawShip();
-    for(auto &b:bullets) drawBullet(b);
-    for(auto &a:asteroids) drawAsteroid(a);
-    drawText(-0.95,0.9,"Score: "+to_string(score));
-    drawText(0.7,0.9,"Lives: "+to_string(ship.lives));
     glutSwapBuffers();
 }
 
-// ===== Keyboard =====
-void keyDown(unsigned char k,int,int){
-    if(k==27) exit(0);
-    if(k==' '){
-        Bullet b;
-        b.pos=ship.pos;
-        b.vel={0.02*cos(ship.angle*M_PI/180),0.02*sin(ship.angle*M_PI/180)};
-        b.life=100;
-        bullets.push_back(b);
+
+static void key(unsigned char key, int x, int y)
+{
+    switch (key)
+    {
+        case 27 :
+        case 'q':
+            exit(0);
+            break;
+
+        case '+':
+            slices++;
+            stacks++;
+            break;
+
+        case '-':
+            if (slices>3 && stacks>3)
+            {
+                slices--;
+                stacks--;
+            }
+            break;
     }
-}
-void specialDown(int k,int,int){
-    if(k==GLUT_KEY_LEFT) keyLeft=true;
-    if(k==GLUT_KEY_RIGHT) keyRight=true;
-    if(k==GLUT_KEY_UP) keyUp=true;
-}
-void specialUp(int k,int,int){
-    if(k==GLUT_KEY_LEFT) keyLeft=false;
-    if(k==GLUT_KEY_RIGHT) keyRight=false;
-    if(k==GLUT_KEY_UP) keyUp=false;
-}
 
-// ===== Timer =====
-void tick(int){
-    update();
     glutPostRedisplay();
-    glutTimerFunc(16,tick,0);
 }
 
-// ===== Main =====
-int main(int argc,char**argv){
-    srand(time(0));
-    glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB);
-    glutInitWindowSize(600,600);
-    glutCreateWindow("Asteroids Shooter (Simple)");
-    glClearColor(0,0,0,1);
-    resetShip();
-    for(int i=0;i<3;i++) spawnAsteroid();
+static void idle(void)
+{
+    glutPostRedisplay();
+}
+
+const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 1.0f };
+const GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_position[] = { 2.0f, 5.0f, 5.0f, 0.0f };
+
+const GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
+const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
+const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat high_shininess[] = { 100.0f };
+
+/* Program entry point */
+
+int main(int argc, char *argv[])
+{
+    glutInit(&argc, argv);
+    glutInitWindowSize(640,480);
+    glutInitWindowPosition(10,10);
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+
+    glutCreateWindow("GLUT Shapes");
+
+    glutReshapeFunc(resize);
     glutDisplayFunc(display);
-    glutKeyboardFunc(keyDown);
-    glutSpecialFunc(specialDown);
-    glutSpecialUpFunc(specialUp);
-    glutTimerFunc(16,tick,0);
+    glutKeyboardFunc(key);
+    glutIdleFunc(idle);
+
+    glClearColor(1,1,1,1);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING);
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+
     glutMainLoop();
-    return 0;
+
+    return EXIT_SUCCESS;
 }
