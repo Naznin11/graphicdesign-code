@@ -1,74 +1,73 @@
-#include <GL/glut.h>
-#include <cmath>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-// Function to draw a filled semicircle
-void drawSemiCircle(float cx, float cy, float r, int num_segments) {
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(cx, cy);
-    for (int i = 0; i <= num_segments; i++) {
-        float theta = M_PI * float(i) / float(num_segments);
-        float x = r * cosf(theta);
-        float y = r * sinf(theta);
-        glVertex2f(x + cx, y + cy);
-    }
-    glEnd();
-}
-
-// Display function
-void display() {
+#include<GL/glut.h>
+#include<math.h>
+float pi=3.141592;
+int segments=400;
+float radius=0.5;
+void circle(){
     glClear(GL_COLOR_BUFFER_BIT);
+    glBegin(GL_POLYGON);
+    glColor3f(1,1,1);
+    for(int i=10;i<segments;i++){
+        float angle=2*pi*float(i)/float(segments);
+        float x=radius*cos(angle);
+        float y=radius*sin(angle);
+        glVertex2f(x,y);
 
-    // Umbrella canopy (yellow semicircle)
-    glColor3f(1.0f, 1.0f, 0.0f);
-    drawSemiCircle(0.0f, 0.0f, 0.7f, 200);
-
-    // Scalloped bottom edges (cut-out effect using white)
- glColor3f(1.0f, 1.0f, 1.0f);
-    drawSemiCircle(-0.15f, 0.0f, 0.23f, 100);
-    drawSemiCircle(0.20f, 0.0f, 0.23f, 100);
-    drawSemiCircle(0.50f, 0.0f, 0.23f, 100);
-   drawSemiCircle(-0.50f, 0.0f, 0.23f, 100);
-
-
-    // Umbrella stick (brown line)
-    glColor3f(0.55f, 0.27f, 0.07f);
-    glBegin(GL_LINES);
-    glVertex2f(0.0f, 0.18f);
-    glVertex2f(0.0f, -0.7f);
-    glEnd();
-
-
-    // Curved handle (J-shape)
-    glBegin(GL_LINE_STRIP);
-    for (int i = -90; i <= 90; i++) {
-        float theta = i * M_PI / 180.0f;
-        float x = 0.15f * cosf(theta);
-        float y = -0.8f + 0.15f * sinf(theta);
-        glVertex2f(x, y);
     }
     glEnd();
+    glBegin(GL_POLYGON);
+    glColor3f(1,1,1);
+    for(int i=10;i<segments;i++){
+        float angle=2*pi*float(i)/float(segments);
+        float x=0.25+radius*cos(angle);
+        float y=0.25+radius*sin(angle);
+        glVertex2f(x,y);
 
-    glFlush();
+    }
+    glEnd();
+    glBegin(GL_POLYGON);
+    glColor3f(1,1,1);
+    for(int i=10;i<segments;i++){
+        float angle=2*pi*float(i)/float(segments);
+        float x=0.45+radius*cos(angle);
+        float y=-0.05+radius*sin(angle);
+        glVertex2f(x,y);
+
+    }
+    glEnd();
+    glBegin(GL_POLYGON);
+    glColor3f(1,1,1);
+    for(int i=10;i<segments;i++){
+        float angle=2*pi*float(i)/float(segments);
+        float x=-0.35+radius*cos(angle);
+        float y=-0.35+radius*sin(angle);
+        glVertex2f(x,y);
+
+    }
+    glEnd();
+     glBegin(GL_POLYGON);
+    glColor3f(1,1,1);
+    for(int i=10;i<segments;i++){
+        float angle=2*pi*float(i)/float(segments);
+        float x=-0.35+radius*cos(angle);
+        float y=0.35+radius*sin(angle);
+        glVertex2f(x,y);
+
+    }
+    glEnd();
+glFlush();
+
 }
+int main(int argc,char** argv){
+glutInit(&argc,argv);
+glutInitDisplayMode(GLUT_SINGLE);
+glutCreateWindow("circle");
 
-void init() {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // White background
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(-1, 1, -1, 1);
-}
+glutInitWindowSize(500,500);
+glutInitWindowPosition(500,400);
+glutDisplayFunc(circle);
+glutMainLoop();
 
-int main(int argc, char** argv) {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(600, 600);
-    glutCreateWindow("Ted's Lost Umbrella");
-    init();
-    glutDisplayFunc(display);
-    glutMainLoop();
-    return 0;
+
+
 }
