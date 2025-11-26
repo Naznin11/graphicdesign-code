@@ -1,73 +1,63 @@
-#include<GL/glut.h>
-#include<math.h>
-float pi=3.141592;
-int segments=400;
-float radius=0.5;
-void circle(){
-    glClear(GL_COLOR_BUFFER_BIT);
-    glBegin(GL_POLYGON);
-    glColor3f(1,1,1);
-    for(int i=10;i<segments;i++){
-        float angle=2*pi*float(i)/float(segments);
-        float x=radius*cos(angle);
-        float y=radius*sin(angle);
-        glVertex2f(x,y);
+#include <GL/glut.h>
 
-    }
-    glEnd();
-    glBegin(GL_POLYGON);
-    glColor3f(1,1,1);
-    for(int i=10;i<segments;i++){
-        float angle=2*pi*float(i)/float(segments);
-        float x=0.25+radius*cos(angle);
-        float y=0.25+radius*sin(angle);
-        glVertex2f(x,y);
 
-    }
-    glEnd();
-    glBegin(GL_POLYGON);
-    glColor3f(1,1,1);
-    for(int i=10;i<segments;i++){
-        float angle=2*pi*float(i)/float(segments);
-        float x=0.45+radius*cos(angle);
-        float y=-0.05+radius*sin(angle);
-        glVertex2f(x,y);
-
-    }
-    glEnd();
-    glBegin(GL_POLYGON);
-    glColor3f(1,1,1);
-    for(int i=10;i<segments;i++){
-        float angle=2*pi*float(i)/float(segments);
-        float x=-0.35+radius*cos(angle);
-        float y=-0.35+radius*sin(angle);
-        glVertex2f(x,y);
-
-    }
-    glEnd();
-     glBegin(GL_POLYGON);
-    glColor3f(1,1,1);
-    for(int i=10;i<segments;i++){
-        float angle=2*pi*float(i)/float(segments);
-        float x=-0.35+radius*cos(angle);
-        float y=0.35+radius*sin(angle);
-        glVertex2f(x,y);
-
-    }
-    glEnd();
-glFlush();
-
+void init() {
+    glClearColor(1, 1, 1, 1);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-1, 1, -1, 1);
 }
-int main(int argc,char** argv){
-glutInit(&argc,argv);
-glutInitDisplayMode(GLUT_SINGLE);
-glutCreateWindow("circle");
-
-glutInitWindowSize(500,500);
-glutInitWindowPosition(500,400);
-glutDisplayFunc(circle);
-glutMainLoop();
 
 
+void drawGrid() {
+    glColor3f(0, 0, 0);
+    glBegin(GL_LINES);
+    glVertex2f( 0, -1); glVertex2f( 0,  1);
+    glVertex2f(-1,  0); glVertex2f( 1,  0);
+    glEnd();
+}
 
+
+void drawX(float x, float y) {
+    float s = 0.2;
+    glBegin(GL_LINES);
+    glVertex2f(x - s, y - s); glVertex2f(x + s, y + s);
+    glVertex2f(x - s, y + s); glVertex2f(x + s, y - s);
+    glEnd();
+}
+
+
+void drawPlus(float x, float y) {
+    float s = 0.2;
+    glBegin(GL_LINES);
+    glVertex2f(x - s, y); glVertex2f(x + s, y);
+    glVertex2f(x, y - s); glVertex2f(x, y + s);
+    glEnd();
+}
+
+
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    drawGrid();
+    glColor3f(0, 0, 0);
+
+    drawX(-0.5,  0.5);
+    drawPlus(0.5,  0.5);
+    drawPlus(-0.5, -0.5);
+    drawX(0.5, -0.5);
+
+    glFlush();
+}
+
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Simple Grid X and +");
+    init();
+    glutDisplayFunc(display);
+    glutMainLoop();
+    return 0;
 }
